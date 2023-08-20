@@ -8,12 +8,21 @@ def getMyPosition (prcSoFar):
     if prcSoFar.shape[1] < 2:
         return currentPos
     # check should buy and sell
-    buy = shouldBuyV4(prcSoFar)
-    sell = shouldSellV4(prcSoFar)
+    buy = shouldBuyV3(prcSoFar)
+    sell = shouldSellV3(prcSoFar)
 
     # update current position
-    currentPos[buy] += 1000
-    currentPos[sell] -= 1000
+    currentPos[buy] = 10000
+    currentPos[sell] = -10000
+
+
+    # make all of currentPos 0 except don't change 24th instrument
+    # list of all instruments to trade
+    TRADE = [2, 11, 12, 24]
+    currentPos[0:2] = 0
+    currentPos[3:11] = -1000
+    currentPos[13:24] = -100000
+    currentPos[25:] = -7000
 
     return currentPos
 
@@ -113,47 +122,3 @@ def shouldSellV3(prcSoFar):
 
     # sell if the price is higher than the mean of the last 5 days and the difference between the last day and the mean of the last 5 days is increasing
     return np.logical_and(lastDay > last5DaysMean, diff < diff5DaysMean)
-
-def shouldBuyV4(prcSoFar):
-    # same as buyv3 but buy only when the decrease is slowing down and reaching a minimum
-    if prcSoFar.shape[1] < 5:
-        # return all instruments false
-        return np.array([False]*nInst)
-    # get the last day of prices
-    lastDay = prcSoFar[:,-1]
-    # get the last 5 days of prices
-    last5Days = prcSoFar[:,-5:]
-    # get the mean of the last 5 days
-    last5DaysMean = np.mean(last5Days, axis=1)
-
-    # check if it is slowing down decline
-    slowingDown = np.logical_and(lastDay < last5DaysMean, lastDay > last5Days[:,-1])
-    # check if it is reaching a minimum
-    reachingMin = np.logical_and(lastDay < last5DaysMean, lastDay < last5Days[:,-1])
-    # check if it is increasing
-    increasing = lastDay > last5DaysMean
-
-    # buy if it is slowing down decline or reaching a minimum
-    return np.logical_or(slowingDown, reachingMin)
-
-def shouldSellV4(prcSoFar):
-    # same as sellv3 but sell only when the increase is slowing down and reaching a maximum
-    if prcSoFar.shape[1] < 5:
-        # return all instruments false
-        return np.array([False]*nInst)
-    # get the last day of prices
-    lastDay = prcSoFar[:,-1]
-    # get the last 5 days of prices
-    last5Days = prcSoFar[:,-5:]
-    # get the mean of the last 5 days
-    last5DaysMean = np.mean(last5Days, axis=1)
-
-    # check if it is slowing down increase
-    slowingDown = np.logical_and(lastDay > last5DaysMean, lastDay < last5Days[:,-1])
-    # check if it is reaching a maximum
-    reachingMax = np.logical_and(lastDay > last5DaysMean, lastDay > last5Days[:,-1])
-    # check if it is decreasing
-    decreasing = lastDay < last5DaysMean
-
-    # sell if it is slowing down increase or reaching a maximum
-    return np.logical_or(slowingDown, reachingMax)
