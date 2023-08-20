@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 nInst=50
 currentPos = np.zeros(nInst)
@@ -12,6 +13,11 @@ def getMyPosition (prcSoFar):
     lastRet = np.log(prcSoFar[:,-1] / prcSoFar[:,-2])
     rpos = np.array([int(x) for x in 2000000 * lastRet / prcSoFar[:,-1]])
     currentPos = np.array([int(x) for x in currentPos+rpos])
+
+    data = prcSoFar[:,-1]
+    plt.plot(data)
+    plt.show()
+
     return currentPos
 
     
